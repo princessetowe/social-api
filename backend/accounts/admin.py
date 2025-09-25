@@ -6,4 +6,4 @@ from .models import CustomUser
 class CustomerUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'date_joined')
     search_fields = ('username', 'email')
-    list_filter = ('is_active')
+    list_filter = ('is_active',)
