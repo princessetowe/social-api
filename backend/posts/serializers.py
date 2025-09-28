@@ -1,12 +1,18 @@
 from rest_framework import serializers
-from .models import Post
+from .models import Post, Comment
 from accounts.serializers import CustomUserSerializer
 
 class PostSerializer(serializers.ModelSerializer):
-    owner = CustomUserSerializer(read_only = True)
-    likes_count = serializers.IntegerField(read_only=True)
+    creator = CustomUserSerializer(read_only = True)
 
     class Meta:
         model = Post
-        fields = ('id', 'owner', 'caption', 'image', 'created_at', 'likes_count')
-        read_only_fields = ("id", "owner", "created_at", "likes_count")
+        fields = ('id', 'creator', 'caption', 'image', 'created_at')
+        read_only_fields = ("id", "creator", "created_at")
+
+class CommentSerializer(serializers.ModelSerializer):
+    creator = CustomUserSerializer(read_only=True)
+    class Meta:
+        model = Comment
+        fields = ['id', 'creator', 'content', 'created_at']
+        read_only_fields = ['id', 'creator', 'created_at']
