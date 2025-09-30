@@ -8,6 +8,9 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.hashers import make_password, check_password
 from django.core.mail import send_mail
 from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
+import uuid
 
 # Create your views here.
 
@@ -50,25 +53,69 @@ class SignupAPIView(generics.CreateAPIView):
         except Exception as e:
             return Response({"error": f"Registration failed: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
-class CustomUserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+class CustomUserRetrieveAPIView(generics.RetrieveAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+    lookup_field = "username"
+
+class CustomUserUpdateAPIView(generics.UpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "username"
+
+    def perform_update(self, serializer):
+        user = self.get_object()
+        
+        if self.request.user != user:
+            raise PermissionDenied("You can only update your own profile")
+        
+        old_email = user.email
+        new_email = self.request.data.get("email", old_email)
+
+        updated_user = serializer.save()
+
+        if old_email != new_email:
+            updated_user.is_active = False  
+            updated_user.save()
+            token = str(uuid.uuid4())
+            EmailVerificationToken.objects.create(customuser=updated_user, token=token)
+
+
+            verification_link = f"http://localhost:8000/api/accounts/verify-email/{token}/"  
+            send_mail(
+                subject="Verify your new email address",
+                message=f"Hi {updated_user.username}, please verify your new email by clicking: {verification_link}",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[new_email],
+            )
+
+class CustomUserDestroyAPIView(generics.DestroyAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = CustomUserSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "username"
+
+    def perform_destroy(self, instance):
+        if self.request.user != instance:
+            raise PermissionDenied("You can only delete your own account.")
+        instance.delete()
 
 class LoginView(APIView):
     authentication_classes = []
     permission_classes = []
 
     def post(self, request, *args, **kwargs):
-        email = request.data.get("email")
+        username = request.data.get("username")
         password = request.data.get("password")
 
         
-        if not email or not password:
-            return Response({"error": "Email and password required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not username or not password:
+            return Response({"error": "Username and password required"}, status=status.HTTP_400_BAD_REQUEST)
         
         from django.contrib.auth import authenticate
 
-        customuser = authenticate(request, email=email, password=password)
+        customuser = authenticate(request, username=username, password=password)
 
         user = customuser
         if user is None:

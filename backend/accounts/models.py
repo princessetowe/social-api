@@ -14,10 +14,10 @@ class CustomUser(AbstractUser):
     country = CountryField(blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS =["username"]
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS =["email"]
     def __str__(self):
-        return self.email
+        return self.username
     
 class EmailVerificationToken(models.Model):
     customuser = models.ForeignKey("CustomUser", on_delete=models.CASCADE, related_name="email_tokens")
