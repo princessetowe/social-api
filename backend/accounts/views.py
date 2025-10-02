@@ -178,3 +178,20 @@ class FollowAPIView(generics.CreateAPIView):
             return Response({"message": "You already follow this account"}, status=status.HTTP_200_OK)
         return Response( {"message": f"You are now following {followuser.username}"},status=status.HTTP_201_CREATED)
 
+class UnfollowAPIView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        username = kwargs.get("username")
+        try:
+            unfollowuser =  get_object_or_404(CustomUser, username=username)
+        except unfollowuser.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            follow = Follow.objects.get(follower=request.user, following=unfollowuser)
+            follow.delete()
+            return Response({"message": "Unfollowed"}, status=status.HTTP_200_OK)
+        except Follow.DoesNotExist:
+            return Response({"error": "You are not following this user"}, status=status.HTTP_400_BAD_REQUEST)
+    

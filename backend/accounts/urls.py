@@ -3,7 +3,7 @@ from .views import (
     CustomUserListView, CustomUserRetrieveAPIView, 
     LoginView, SignupAPIView, VerifyEmailAPIView,
     CustomUserUpdateAPIView, CustomUserDestroyAPIView,
-    FollowAPIView
+    FollowAPIView, UnfollowAPIView
 )
 
 urlpatterns = [
@@ -15,4 +15,5 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name="user-login"),
     path("verify-email/<uuid:token>/", VerifyEmailAPIView.as_view(), name="verify-email"),
     path('follow/<str:username>/', FollowAPIView.as_view()),
+    path('unfollow/<str:username>/', UnfollowAPIView.as_view()),
 ]
