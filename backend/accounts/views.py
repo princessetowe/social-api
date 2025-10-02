@@ -169,7 +169,7 @@ class FollowAPIView(generics.CreateAPIView):
 
     def post(self, request, username, *args, **kwargs):
         followuser = get_object_or_404(CustomUser, username=username)
-        
+
         if request.user == followuser:
             return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -192,3 +192,16 @@ class UnfollowAPIView(generics.DestroyAPIView):
         except Follow.DoesNotExist:
             return Response({"error": "You are not following this user"}, status=status.HTTP_400_BAD_REQUEST)
     
+class FollowersListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username, *args, **kwargs):
+        try:
+            user = CustomUser.objects.get(username=username)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        followers = Follow.objects.filter(following=user).select_related("follower")
+        usernames = [f.follower.username for f in followers]
+
+        return Response({"followers": usernames}, status=status.HTTP_200_OK)
