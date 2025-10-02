@@ -169,7 +169,7 @@ class FollowAPIView(generics.CreateAPIView):
 
     def post(self, request, username, *args, **kwargs):
         followuser = get_object_or_404(CustomUser, username=username)
-
+        
         if request.user == followuser:
             return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -183,11 +183,8 @@ class UnfollowAPIView(generics.DestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         username = kwargs.get("username")
-        try:
-            unfollowuser =  get_object_or_404(CustomUser, username=username)
-        except unfollowuser.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-        
+
+        unfollowuser =  get_object_or_404(CustomUser, username=username)
         try:
             follow = Follow.objects.get(follower=request.user, following=unfollowuser)
             follow.delete()
