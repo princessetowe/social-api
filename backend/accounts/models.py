@@ -4,6 +4,7 @@ from datetime import timedelta
 import uuid
 from django.utils import timezone
 from django_countries.fields import CountryField
+from django.conf import settings
 
 # Create your models here.
 class CustomUser(AbstractUser):
@@ -32,3 +33,15 @@ class EmailVerificationToken(models.Model):
 
     def is_expired(self):
         return timezone.now() > self.expires_at
+    
+class Follow(models.Model):
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="following", on_delete=models.CASCADE)
+    following = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="followers", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("follower", "following")
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.following.username}"
+    

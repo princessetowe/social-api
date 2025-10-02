@@ -1,7 +1,6 @@
-from django.shortcuts import render
 from rest_framework import generics, status
-from .models import CustomUser, EmailVerificationToken
-from .serializers import CustomUserSerializer
+from .models import CustomUser, EmailVerificationToken, Follow
+from .serializers import CustomUserSerializer, FollowSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -11,6 +10,10 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 import uuid
+from django.shortcuts import get_object_or_404
+
+
+User = settings.AUTH_USER_MODEL
 
 # Create your views here.
 
@@ -158,3 +161,20 @@ class VerifyEmailAPIView(APIView):
             return Response({"message": "Email verified successfully"}, status=status.HTTP_200_OK)
         except EmailVerificationToken.DoesNotExist:
             return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+
+class FollowAPIView(generics.CreateAPIView):
+    queryset = Follow.objects.all()
+    serializer_class = FollowSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, username, *args, **kwargs):
+        followuser = get_object_or_404(CustomUser, username=username)
+
+        if request.user == followuser:
+            return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        follow, created = Follow.objects.get_or_create(follower=request.user, following=followuser)
+        if not created:
+            return Response({"message": "You already follow this account"}, status=status.HTTP_200_OK)
+        return Response( {"message": f"You are now following {followuser.username}"},status=status.HTTP_201_CREATED)
+

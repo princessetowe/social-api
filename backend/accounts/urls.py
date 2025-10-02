@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     CustomUserListView, CustomUserRetrieveAPIView, 
     LoginView, SignupAPIView, VerifyEmailAPIView,
-    CustomUserUpdateAPIView, CustomUserDestroyAPIView
+    CustomUserUpdateAPIView, CustomUserDestroyAPIView,
+    FollowAPIView
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('<str:username>/delete/', CustomUserDestroyAPIView.as_view(), name="user-delete"),
     path('login/', LoginView.as_view(), name="user-login"),
     path("verify-email/<uuid:token>/", VerifyEmailAPIView.as_view(), name="verify-email"),
+    path('follow/<str:username>/', FollowAPIView.as_view()),
 ]
