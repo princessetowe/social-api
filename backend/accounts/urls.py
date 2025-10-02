@@ -3,7 +3,8 @@ from .views import (
     CustomUserListView, CustomUserRetrieveAPIView, 
     LoginView, SignupAPIView, VerifyEmailAPIView,
     CustomUserUpdateAPIView, CustomUserDestroyAPIView,
-    FollowAPIView, UnfollowAPIView, FollowersListAPIView
+    FollowAPIView, UnfollowAPIView, FollowersListAPIView,
+    FollowingListAPIView
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('follow/<str:username>/', FollowAPIView.as_view()),
     path('unfollow/<str:username>/', UnfollowAPIView.as_view()),
     path('<str:username>/followers/', FollowersListAPIView.as_view()),
+    path('<str:username>/following/', FollowingListAPIView.as_view()),
 ]

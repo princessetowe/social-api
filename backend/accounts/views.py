@@ -205,3 +205,17 @@ class FollowersListAPIView(generics.ListAPIView):
         usernames = [f.follower.username for f in followers]
 
         return Response({"followers": usernames}, status=status.HTTP_200_OK)
+    
+class FollowingListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, username, *args, **kwargs):
+        try:
+            user = CustomUser.objects.get(username=username)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        following = Follow.objects.filter(follower=user).select_related("following")
+        usernames = [f.following.username for f in following]
+
+        return Response({"following": usernames}, status=status.HTTP_200_OK)
