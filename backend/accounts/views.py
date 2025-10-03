@@ -109,16 +109,16 @@ class LoginView(APIView):
     permission_classes = []
 
     def post(self, request, *args, **kwargs):
-        username = request.data.get("username")
+        login = request.data.get("login")
         password = request.data.get("password")
 
         
-        if not username or not password:
+        if not login or not password:
             return Response({"error": "Username and password required"}, status=status.HTTP_400_BAD_REQUEST)
         
         from django.contrib.auth import authenticate
 
-        customuser = authenticate(request, username=username, password=password)
+        customuser = authenticate(request, username=login, password=password)
 
         user = customuser
         if user is None:
@@ -138,6 +138,7 @@ class LoginView(APIView):
                 "username": user.username,
                 "email": user.email,
                 "bio": user.bio,
+                "phone_number": user.phone_number,
                 "profile_picture": user.profile_picture.url if user.profile_picture else None
             }
         }, status=status.HTTP_200_OK)

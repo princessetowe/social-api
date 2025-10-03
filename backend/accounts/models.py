@@ -16,7 +16,7 @@ class CustomUser(AbstractUser):
     country = CountryField(blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_private = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=12, null=True, blank=True)
+    phone_number = models.CharField(max_length=12, null=True, blank=True, unique=True)
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS =["email"]
