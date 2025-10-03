@@ -6,6 +6,7 @@ from django.utils import timezone
 from django_countries.fields import CountryField
 from django.conf import settings
 
+User = settings.AUTH_USER_MODEL
 # Create your models here.
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
@@ -14,6 +15,8 @@ class CustomUser(AbstractUser):
     bio = models.TextField(blank=True)
     country = CountryField(blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_private = models.BooleanField(default=False)
+    phone_number = models.CharField(max_length=12, null=True, blank=True)
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS =["email"]
@@ -35,8 +38,8 @@ class EmailVerificationToken(models.Model):
         return timezone.now() > self.expires_at
     
 class Follow(models.Model):
-    follower = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="following", on_delete=models.CASCADE)
-    following = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="followers", on_delete=models.CASCADE)
+    follower = models.ForeignKey(User, related_name="following", on_delete=models.CASCADE)
+    following = models.ForeignKey(User, related_name="followers", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -45,3 +48,12 @@ class Follow(models.Model):
     def __str__(self):
         return f"{self.follower.username} follows {self.following.username}"
     
+class FollowRequest(models.Model):
+    from_user = models.ForeignKey(User, related_name="sent_requests", on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name="received_requests", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ("from_user", "to_user")
+
+    def __str__(self):
+        return f"{self.from_user} requested to follow {self.to_user}"

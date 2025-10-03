@@ -1,5 +1,5 @@
 from rest_framework import generics, status
-from .models import CustomUser, EmailVerificationToken, Follow
+from .models import CustomUser, EmailVerificationToken, Follow, FollowRequest
 from .serializers import CustomUserSerializer, FollowSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -173,6 +173,13 @@ class FollowAPIView(generics.CreateAPIView):
         if request.user == followuser:
             return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
         
+        if followuser.is_private:
+            follow_request, created = FollowRequest.objects.get_or_create(from_user=request.user, to_user=followuser)
+
+            if not created:
+                return Response({"message": "Follow request already sent"}, status=status.HTTP_200_OK)
+            return Response({"message": f"Follow request sent to {followuser.username}"}, status=status.HTTP_201_CREATED) 
+        
         follow, created = Follow.objects.get_or_create(follower=request.user, following=followuser)
         if not created:
             return Response({"message": "You already follow this account"}, status=status.HTTP_200_OK)
@@ -219,3 +226,34 @@ class FollowingListAPIView(generics.ListAPIView):
         usernames = [f.following.username for f in following]
 
         return Response({"following": usernames}, status=status.HTTP_200_OK)
+
+class FollowRequestListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        requests = FollowRequest.objects.filter(to_user=request.user).select_related("from_user")
+        usernames = [r.from_user.username for r in requests]
+        return Response({"requests": usernames}, status=status.HTTP_200_OK)
+    
+class FollowRequestAcceptOrRejectAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, username, *args, **kwargs):
+        from_user = get_object_or_404(CustomUser, username=username)
+
+        try:
+            follow_request = FollowRequest.objects.get(from_user=from_user, to_user=request.user)
+
+        except FollowRequest.DoesNotExist:
+            return Response({"error": "No follow request from this user"}, status=status.HTTP_404_NOT_FOUND)
+        
+        action = request.data.get("action")
+        if action == "accept":
+            Follow.objects.create(follower=from_user, following=request.user)
+            follow_request.delete()
+            return Response({"message": f"{from_user.username} started following you"},status=status.HTTP_200_OK)
+        
+        elif action == "reject":
+            follow_request.delete()
+            return Response({"message": "Follow request rejected"}, status=status.HTTP_200_OK)
+        return Response({"error": "Invalid action"}, status=status.HTTP_400_BAD_REQUEST)

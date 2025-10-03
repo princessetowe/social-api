@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, Follow
+from .models import CustomUser, Follow, FollowRequest
 # Register your models here.
 
 @admin.register(CustomUser)
@@ -9,3 +9,4 @@ class CustomerUserAdmin(admin.ModelAdmin):
     list_filter = ('is_active',)
 
 admin.site.register(Follow)
+admin.site.register(FollowRequest)
