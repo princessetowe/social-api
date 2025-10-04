@@ -5,7 +5,6 @@ User = settings.AUTH_USER_MODEL
 class Post(models.Model):
     creator = models.ForeignKey(User, related_name="posts", on_delete=models.CASCADE)
     caption = models.TextField(blank=True)
-    image = models.ImageField(upload_to="posts/", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -13,6 +12,19 @@ class Post(models.Model):
 
     def __str__(self):
         return f"Post for {self.creator}"
+
+class PostMedia(models.Model):
+    MEDIA_TYPES = (
+        ('image', 'Image'),
+        ('video', 'Video')
+    )
+
+    post = models.ForeignKey(Post, related_name="media", on_delete=models.CASCADE)
+    file = models.FileField(upload_to="posts/media/")
+    media_type = models.CharField(max_length=5, choices=MEDIA_TYPES)
+
+    def __str__(self):
+        return f"{self.media_type} for {self.post.creator}'s post"
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")

@@ -12,14 +12,14 @@ class PostListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        posts = Post.objects.all()
+        posts = Post.objects.all().order_by("-created_at")
         serializer = PostSerializer(posts, many=True, context={"request": request})
         return Response(serializer.data)
 
     def post(self, request):
         serializer = PostSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
-            serializer.save(owner=request.user)
+            serializer.save(creator=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

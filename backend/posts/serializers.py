@@ -1,14 +1,43 @@
 from rest_framework import serializers
-from .models import Post, Comment, Like
+from .models import Post, Comment, Like, PostMedia
 from accounts.serializers import CustomUserSerializer
+
+class PostMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostMedia
+        fields = ['id', 'file', 'media_type']
 
 class PostSerializer(serializers.ModelSerializer):
     creator = CustomUserSerializer(read_only = True)
-
+    media = PostMediaSerializer(many=True, read_only =True)
+    files = serializers.ListField(
+        child=serializers.FileField(max_length=1000, allow_empty_file=False, use_url=False),
+        write_only=True, 
+        required=False
+    )
     class Meta:
         model = Post
-        fields = ('id', 'creator', 'caption', 'image', 'created_at')
+        fields = ('id', 'creator', 'caption', 'media', 'files', 'created_at')
         read_only_fields = ("id", "creator", "created_at")
+
+    def create(self, validated_data):
+        files = validated_data.pop('files', [])
+        post = Post.objects.create(**validated_data)
+
+        for file in files:
+            #Checks file extension
+            ext = file.name.lower()
+            if ext.endswith(('.mp4', '.mov', '.mkv')):
+                media_type = 'video'
+
+            elif ext.endswith(('.jpeg', '.png', 'jpg', '.bmp', '.gif', '.tiff', '.webp', '.svg')):
+                media_type = 'image'
+
+            else:
+                raise serializers.ValidationError({"file": "Unsupported file format"})
+            
+            PostMedia.objects.create(post=post, file=file, media_type=media_type)
+        return post
 
 class CommentSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
