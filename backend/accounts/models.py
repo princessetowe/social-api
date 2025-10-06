@@ -5,6 +5,7 @@ import uuid
 from django.utils import timezone
 from django_countries.fields import CountryField
 from django.conf import settings
+from phonenumber_field.modelfields import PhoneNumberField
 
 User = settings.AUTH_USER_MODEL
 # Create your models here.
@@ -16,7 +17,7 @@ class CustomUser(AbstractUser):
     country = CountryField(blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_private = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=12, null=True, blank=True, unique=True)
+    phone_number = PhoneNumberField(region=None, null=True, blank=True, unique=True)
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS =["email"]

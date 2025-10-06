@@ -138,7 +138,7 @@ class LoginView(APIView):
                 "username": user.username,
                 "email": user.email,
                 "bio": user.bio,
-                "phone_number": user.phone_number,
+                "phone_number": str(user.phone_number),
                 "profile_picture": user.profile_picture.url if user.profile_picture else None
             }
         }, status=status.HTTP_200_OK)
