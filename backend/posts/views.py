@@ -56,12 +56,6 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
         post_id = self.kwargs["post_pk"]
         comment = serializer.save(user=self.request.user, post_id=post_id)
 
-        handle_tags(
-            text=comment.content,
-            person=self.request.user,
-            comment=comment,
-        )
-
 class LikeAPIView(generics.GenericAPIView):
     serializer_class = LikeSerializer
     permission_classes = [IsAuthenticated]

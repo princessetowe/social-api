@@ -3,6 +3,7 @@ from .models import Post, Comment, Like, PostMedia
 from accounts.serializers import CustomUserSerializer
 import re
 from django.contrib.auth import get_user_model
+from utils.tags import handle_tags
 User = get_user_model
 
 class PostMediaSerializer(serializers.ModelSerializer):
@@ -40,32 +41,28 @@ class PostSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"file": "Unsupported file format"})
             
             PostMedia.objects.create(post=post, file=file, media_type=media_type)
-        caption_text = validated_data.get("caption", "")
-        self.handle_tags(caption_text, post)
         return post
     
-    def handle_tags(self, text, instance):
-        tagged_usernames = re.findall(r'@(\w+)', text)
-
-        for username in tagged_usernames:
-            try:
-                tagged_user = User.objects.get(username=username)
-                print(f"{tagged_user.username} was mentioned")
-            except User.DoesNotExist:
-                continue
-
+    def get_tagged_users(self, obj):
+        users = extract_tagged_users(obj.text)
+        return [user.username for user in users]
 class CommentSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     replies = serializers.SerializerMethodField()
+    tagged_users =serializers.SerializerMethodField()
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'content', 'created_at', 'replies', 'main']
+        fields = ['id', 'user', 'content', 'created_at', 'replies', 'main', 'tagged_users']
         read_only_fields = ['id', 'user', 'created_at']
 
     def get_replies(self, obj):
         if obj.replies.exists():
             return CommentSerializer(obj.replies.all(), many=True).data
         return []
+    
+    def get_tagged_users(self, obj):
+        users = handle_tags(obj.text)
+        return [user.username for user in users]
 
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:

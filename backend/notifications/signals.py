@@ -43,14 +43,33 @@ def create_comment_notification(sender, instance, created, **kwargs):
                 if tagged_user != instance.user:
                     Notification.objects.create(
                         sender=instance.user,
-                        receiver=tagged_user,
-                        notification_type='mention',
+                        recipient=tagged_user,
+                        notification_type='tag',
                         message=f"{instance.user.username} tagged you in a comment."
                     )
             except CustomUser.DoesNotExist:
                 continue
 
-@receiver(post_save, sender=Like)
+@receiver(post_save, sender=Post)
+def create_post_tags_notification(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    tagged_usernames = re.findall(r'@(\w+)', instance.caption)
+    for username in tagged_usernames:
+        try:
+            tagged_user = CustomUser.objects.get(username=username)
+            if tagged_user != instance.creator:
+                Notification.objects.create(
+                    sender=instance.creator,
+                    recipient=tagged_user,
+                    notification_type='tag',
+                    message=f"{instance.creator.username} tagged you in a post"
+                )
+        except CustomUser.DoesNotExist:
+            continue
+
+@receiver(post_save, sender=Follow)
 def create_follow_notification(sender, instance, created, **kwargs):
     if created:
         Notification.objects.create(
@@ -60,7 +79,7 @@ def create_follow_notification(sender, instance, created, **kwargs):
             notification_type='follow'
         )
             
-@receiver(post_save, sender=Like)
+@receiver(post_save, sender=FollowRequest)
 def create_follow_request_notification(sender, instance, created, **kwargs):
     if created:
         Notification.objects.create(
