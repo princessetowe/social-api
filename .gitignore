@@ -216,5 +216,7 @@ __marimo__/
 *.webp
 *.svg
 
+*.mov
+**/media/
 **/migrations/
 !**/migrations/__init__.py
