@@ -41,7 +41,7 @@ class PostSerializer(serializers.ModelSerializer):
             
             PostMedia.objects.create(post=post, file=file, media_type=media_type)
         caption_text = validated_data.get("caption", "")
-        self._process_tags(caption_text, post)
+        self.handle_tags(caption_text, post)
         return post
     
     def handle_tags(self, text, instance):
