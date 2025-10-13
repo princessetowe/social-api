@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer, LikeSerializer
+from utils.tags import handle_tags
 # from drf_yasg.utils import swagger_auto_schema
 # Create your views here.
 
@@ -54,6 +55,12 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         post_id = self.kwargs["post_pk"]
         comment = serializer.save(user=self.request.user, post_id=post_id)
+
+        handle_tags(
+            text=comment.content,
+            person=self.request.user,
+            comment=comment,
+        )
 
 class LikeAPIView(generics.GenericAPIView):
     serializer_class = LikeSerializer

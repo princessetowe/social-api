@@ -44,6 +44,16 @@ class PostSerializer(serializers.ModelSerializer):
         self.handle_tags(caption_text, post)
         return post
     
+    def handle_tags(self, text, instance):
+        tagged_usernames = re.findall(r'@(\w+)', text)
+
+        for username in tagged_usernames:
+            try:
+                tagged_user = User.objects.get(username=username)
+                print(f"{tagged_user.username} was mentioned")
+            except User.DoesNotExist:
+                continue
+
 class CommentSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     replies = serializers.SerializerMethodField()
