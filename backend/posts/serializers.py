@@ -1,9 +1,10 @@
 from rest_framework import serializers
-from .models import Post, Comment, Like, PostMedia
+from .models import Post, Comment, Like, PostMedia, Hashtag
 from accounts.serializers import CustomUserSerializer
-import re
 from django.contrib.auth import get_user_model
 from utils.tags import handle_tags
+from utils.hashtag import extract_hashtags
+
 User = get_user_model
 
 class PostMediaSerializer(serializers.ModelSerializer):
@@ -41,11 +42,14 @@ class PostSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"file": "Unsupported file format"})
             
             PostMedia.objects.create(post=post, file=file, media_type=media_type)
+
+        hashtags = extract_hashtags(post.caption or "")
+        for tag in hashtags:
+            hashtag_obj, created = Hashtag.objects.get_or_create(name=tag.lower())
+            if not created:
+                hashtag_obj.save()
         return post
     
-    def get_tagged_users(self, obj):
-        users = extract_tagged_users(obj.text)
-        return [user.username for user in users]
 class CommentSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     replies = serializers.SerializerMethodField()

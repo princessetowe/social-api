@@ -2,9 +2,18 @@ from django.db import models
 from django.conf import settings
 # Create your models here.
 User = settings.AUTH_USER_MODEL
+
+class Hashtag(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"#{self.name}"
+
 class Post(models.Model):
     creator = models.ForeignKey(User, related_name="posts", on_delete=models.CASCADE)
     caption = models.TextField(blank=True)
+    hashtags = models.ManyToManyField(Hashtag, related_name="posts", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
