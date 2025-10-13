@@ -11,9 +11,9 @@ from .views import (
 urlpatterns = [
     path('signup/', SignupAPIView.as_view(), name="user-registration"),
     path('', CustomUserListView.as_view(), name="user-list"),
-    path('<str:username>/fetch/', CustomUserRetrieveAPIView.as_view(), name="user-detail"),
-    path('<str:username>/edit/', CustomUserUpdateAPIView.as_view(), name="user-detail"),
-    path('<str:username>/delete/', CustomUserDestroyAPIView.as_view(), name="user-delete"),
+    path('<str:username>/profile/', CustomUserRetrieveAPIView.as_view(), name="user-detail"),
+    path('<str:username>/edit-profile/', CustomUserUpdateAPIView.as_view(), name="user-detail"),
+    path('<str:username>/deleteaccount/', CustomUserDestroyAPIView.as_view(), name="user-delete"),
     path('login/', LoginView.as_view(), name="user-login"),
     path('verify-email/<uuid:token>/', VerifyEmailAPIView.as_view(), name="verify-email"),
     path('follow/<str:username>/', FollowAPIView.as_view()),

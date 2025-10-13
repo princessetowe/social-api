@@ -5,16 +5,32 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer, LikeSerializer
-
+from utils.tags import handle_tags
+# from drf_yasg.utils import swagger_auto_schema
 # Create your views here.
 
 class PostListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    # @swagger_auto_schema(
+    #     responses={200: PostSerializer(many=True)},
+    #     operation_description="Retrieve a list of all posts",
+    # )
+
     def get(self, request):
         posts = Post.objects.all().order_by("-created_at")
         serializer = PostSerializer(posts, many=True, context={"request": request})
         return Response(serializer.data)
+    
+    # @swagger_auto_schema(
+    #     request_body=PostSerializer,
+    #     responses={
+    #         201: "Post created successfully",
+    #         400: "Invalid data provided",
+    #     },
+    #     operation_description="Create a new post (supports multiple image/video uploads)",
+
+    # )
 
     def post(self, request):
         serializer = PostSerializer(data=request.data, context={"request": request})
@@ -34,11 +50,17 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
     
     def get_queryset(self):
         post_id = self.kwargs["post_pk"]
-        return Comment.objects.filter(post_id=post_id).select_related("user").order_by("-created_at")
+        return Comment.objects.filter(post_id=post_id,).select_related("user").order_by("-created_at")
     
     def perform_create(self, serializer):
         post_id = self.kwargs["post_pk"]
-        serializer.save(user=self.request.user, post_id=post_id)
+        comment = serializer.save(user=self.request.user, post_id=post_id)
+
+        handle_tags(
+            text=comment.content,
+            person=self.request.user,
+            comment=comment,
+        )
 
 class LikeAPIView(generics.GenericAPIView):
     serializer_class = LikeSerializer

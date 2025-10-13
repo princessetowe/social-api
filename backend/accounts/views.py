@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from .models import CustomUser, EmailVerificationToken, Follow, FollowRequest
-from .serializers import CustomUserSerializer, FollowSerializer
+from .serializers import CustomUserSerializer, FollowSerializer, LoginSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 import uuid
 from django.shortcuts import get_object_or_404
+# from drf_yasg.utils import swagger_auto_schema
 
 
 User = settings.AUTH_USER_MODEL
@@ -107,6 +108,15 @@ class CustomUserDestroyAPIView(generics.DestroyAPIView):
 class LoginView(APIView):
     authentication_classes = []
     permission_classes = []
+    
+    # @swagger_auto_schema(
+    #     request_body=LoginSerializer,
+    #     responses={
+    #         200: "Login successful",
+    #         400: "Invalid credentials",
+    #     },
+    #     operation_description="Login using email, username, or phone number."
+    # )
 
     def post(self, request, *args, **kwargs):
         login = request.data.get("login")
