@@ -215,3 +215,6 @@ __marimo__/
 *.tiff
 *.webp
 *.svg
+
+**/migrations/
+!**/migrations/__init__.py
