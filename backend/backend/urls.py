@@ -34,7 +34,8 @@ urlpatterns = [
     path('api/accounts/', include('accounts.urls')),
     path("api/posts/", include("posts.urls")),
     path("api/notifications/", include("notifications.urls")),
-    path('api/search/', include('search.urls'))
+    path('api/search/', include('search.urls')),
+    path('api/messaging/', include('messaging.urls'))
 
     # re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     # path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

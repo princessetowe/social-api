@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'posts',
     'rest_framework',
     'notifications.apps.NotificationsConfig',
+    'messaging',
     # 'drf_yasg',
 ]
 
