@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 
-# Create your models here.
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
         ('like', 'Like'),
@@ -9,6 +8,7 @@ class Notification(models.Model):
         ('follow', 'Follow'),
         ('tag', 'Tag'),
         ('follow_request', 'Follow Request'),
+        ('message', 'Message'),
     ]
 
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
@@ -18,4 +18,4 @@ class Notification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.sender} {self.notification_type} {self.recipient}" 
+        return f"{self.notification_type} notification from {self.sender} to {self.recipient}" 

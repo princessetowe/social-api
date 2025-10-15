@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from posts.models import Like, Comment, Post
 from .models import Notification
 from accounts.models import Follow, FollowRequest, CustomUser
+from messaging.models import Message
 import re
 
 @receiver(post_save, sender=Like)
@@ -88,3 +89,15 @@ def create_follow_request_notification(sender, instance, created, **kwargs):
             message=f"{instance.from_user.username} sent you a follow request",
             notification_type='follow_request'
         )
+
+@receiver(post_save, sender=Message)
+def create_message_notification(sender, instance, created, **kwargs):
+    if created:
+        recipients = instance.recipients
+        for recipient in recipients:
+            Notification.objects.create(
+                sender=instance.sender,
+                recipient=recipient,
+                message=f"New Message from {instance.sender.username}",
+                notification_type="message"
+            )

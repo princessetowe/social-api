@@ -219,4 +219,5 @@ __marimo__/
 *.mov
 **/media/
 **/migrations/
+**/profile_pics/
 !**/migrations/__init__.py

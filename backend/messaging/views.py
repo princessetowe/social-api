@@ -5,7 +5,6 @@ from .models import Chat, Message
 from .serializers import ChatSerializer, MessageSerializer
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-# Create your views here.
 
 class ChatListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = ChatSerializer
@@ -21,6 +20,7 @@ class ChatListCreateAPIView(generics.ListCreateAPIView):
 class MessageListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
+    queryset=Message
 
     def get(self, request, *args, **kwargs):
         chat_id = kwargs.get('chat_id')
@@ -62,3 +62,11 @@ class MarkAsReadAPIView(APIView):
             message.save()
             return Response({"message":"Message marked as read"}, status=status.HTTP_200_OK)
         return Response({"message":"Message already marked as read"}, status=status.HTTP_200_OK)
+    
+class UnreadCountAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        unread_count = Message.objects.filter(chat__members=user, is_read=False).exclude(sender=user).count()
+        return Response({"unread_message":unread_count}, status=status.HTTP_200_OK)

@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 
-# Create your models here.
 User = settings.AUTH_USER_MODEL
 
 #Group Chats or normal chats
@@ -11,6 +10,9 @@ class Chat(models.Model):
     
     def __str__(self):
         return f"Chat for {', '.join([user.username for user in self.members.all()])}"
+    
+    def unread_count(self, user):
+        return self.messages.filter(is_read=False).exclude(sender=user).count()
 
 #Messages sent in the chat
 class Message(models.Model):
@@ -23,3 +25,21 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.sender.username} in {self.chat.id}"
+    
+    @property
+    def recipients(self):
+        return self.chat.members.exclude(id=self.sender.id)
+    
+class MessageMedia(models.Model):
+    MEDIA_TYPES = (
+        ('image', 'Image'),
+        ('video', 'Video'), 
+        ('file', 'File')
+    )
+
+    message = models.ForeignKey(Message, related_name="media", on_delete=models.CASCADE)
+    file = models.FileField(upload_to="posts/media/")
+    media_type = models.CharField(max_length=5, choices=MEDIA_TYPES)
+
+    def __str__(self):
+        return f"Media for {self.message.chat.members}"

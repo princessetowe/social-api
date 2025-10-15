@@ -8,11 +8,11 @@ from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
 
 User = settings.AUTH_USER_MODEL
-# Create your models here.
+
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    profile_picture = models.ImageField(upload_to='profile_pics', null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='accounts/profile_pics', null=True, blank=True)
     bio = models.TextField(blank=True)
     country = CountryField(blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
