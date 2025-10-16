@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 import uuid
 from django.shortcuts import get_object_or_404
+from .throttles import LoginThrottle
 # from drf_yasg.utils import swagger_auto_schema
 
 
@@ -108,6 +109,8 @@ class CustomUserDestroyAPIView(generics.DestroyAPIView):
 class LoginView(APIView):
     authentication_classes = []
     permission_classes = []
+    
+    throttle_classes = [LoginThrottle]
     
     # @swagger_auto_schema(
     #     request_body=LoginSerializer,
