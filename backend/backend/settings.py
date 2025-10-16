@@ -43,14 +43,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'notifications.apps.NotificationsConfig',
     'messaging',
-
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     # 'drf_yasg',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -69,6 +69,16 @@ REST_FRAMEWORK = {
     },
 
     'EXCEPTION_HANDLER': 'accounts.exceptions.custom_exception_handler',
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 
@@ -167,6 +177,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 # EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 # DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
+DEFAULT_FROM_EMAIL = "noreply@social.com"
 
 
 AUTHENTICATION_BACKENDS = [

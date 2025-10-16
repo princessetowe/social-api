@@ -1,17 +1,22 @@
 from rest_framework import generics, status
-from .models import CustomUser, EmailVerificationToken, Follow, FollowRequest
-from .serializers import CustomUserSerializer, FollowSerializer, LoginSerializer
+from .models import (
+    CustomUser, EmailVerificationToken, 
+    Follow, FollowRequest
+)
+from .serializers import (
+    CustomUserSerializer, FollowSerializer,
+)
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
-from django.contrib.auth.hashers import make_password, check_password
 from django.core.mail import send_mail
 from django.conf import settings
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied
 import uuid
 from django.shortcuts import get_object_or_404
 from .throttles import LoginThrottle
+from rest_framework_simplejwt.tokens import RefreshToken
+
 # from drf_yasg.utils import swagger_auto_schema
 
 
@@ -22,10 +27,12 @@ User = settings.AUTH_USER_MODEL
 class CustomUserListView(generics.ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+    permission_classes = [AllowAny]
 
 class SignupAPIView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -141,11 +148,15 @@ class LoginView(APIView):
             return Response({"error": "Please verify your email before logging in"}, status=status.HTTP_403_FORBIDDEN)
 
         
-        token, _ = Token.objects.get_or_create(user=user)
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
 
         return Response({
             "message": "Login successful",
-            "token": token.key,
+            "token": {
+                "access":access_token,
+                "refresh":str(refresh)
+            },
             "user": {
                 "id": user.id,
                 "username": user.username,
@@ -157,14 +168,18 @@ class LoginView(APIView):
         }, status=status.HTTP_200_OK)
         
 class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         try:
-            request.user.auth_token.delete()
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
         except:
             return Response({"error": "Not logged in"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
 
 class VerifyEmailAPIView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request, token, *args, **kwargs):
         try:
             token_obj = EmailVerificationToken.objects.get(token=token)
