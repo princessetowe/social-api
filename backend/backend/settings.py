@@ -45,8 +45,23 @@ INSTALLED_APPS = [
     'messaging',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    # 'drf_yasg',
+    'drf_yasg',
 ]
+
+from drf_yasg import openapi
+
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': True,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'Bearer token',
+        },
+    },
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -55,18 +70,20 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE':5,
 
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.UserRateThrottle',
         'rest_framework.throttling.AnonRateThrottle',
+        'accounts.throttles.LoginThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
         'user': '1000/day',
         'anon': '100/hour',
-        'login': '5/minute',
+        'login':'5/minute',
     },
+
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE':5,
 
     'EXCEPTION_HANDLER': 'accounts.exceptions.custom_exception_handler',
 }

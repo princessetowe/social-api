@@ -17,8 +17,12 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return user
     
 class LoginSerializer(serializers.Serializer):
-    login = serializers.CharField()
+    identifier = serializers.CharField()
     password = serializers.CharField(write_only=True)
+
+
+class RefreshSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
 
 class FollowSerializer(serializers.ModelSerializer):
     class Meta:

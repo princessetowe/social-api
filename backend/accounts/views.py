@@ -5,6 +5,7 @@ from .models import (
 )
 from .serializers import (
     CustomUserSerializer, FollowSerializer,
+    LoginSerializer, RefreshSerializer
 )
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -16,8 +17,9 @@ import uuid
 from django.shortcuts import get_object_or_404
 from .throttles import LoginThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
-# from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.utils import swagger_auto_schema
 
 
 User = settings.AUTH_USER_MODEL
@@ -74,6 +76,7 @@ class CustomUserUpdateAPIView(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     lookup_field = "username"
 
     def perform_update(self, serializer):
@@ -118,27 +121,28 @@ class LoginView(APIView):
     permission_classes = []
     
     throttle_classes = [LoginThrottle]
+    throttle_scope = 'login'
     
-    # @swagger_auto_schema(
-    #     request_body=LoginSerializer,
-    #     responses={
-    #         200: "Login successful",
-    #         400: "Invalid credentials",
-    #     },
-    #     operation_description="Login using email, username, or phone number."
-    # )
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={
+            200: "Login successful",
+            400: "Invalid credentials",
+        },
+        operation_description="Login using email, username, or phone number."
+    )
 
     def post(self, request, *args, **kwargs):
-        login = request.data.get("login")
+        identifier = request.data.get("identifier")
         password = request.data.get("password")
 
         
-        if not login or not password:
+        if not identifier or not password:
             return Response({"error": "Username and password required"}, status=status.HTTP_400_BAD_REQUEST)
         
         from django.contrib.auth import authenticate
 
-        customuser = authenticate(request, username=login, password=password)
+        customuser = authenticate(request, username=identifier, password=password)
 
         user = customuser
         if user is None:
@@ -168,14 +172,27 @@ class LoginView(APIView):
         }, status=status.HTTP_200_OK)
         
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @swagger_auto_schema(
+        request_body=RefreshSerializer,
+        responses={
+            200: "Logged out successfully",
+            400: "Refresh token required or invalid",
+        },
+    )
     def post(self, request):
+        refresh_token = request.data.get("refresh")
+        if not refresh_token:
+            return Response({"error": "Refresh token required"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            refresh_token = request.data["refresh"]
             token = RefreshToken(refresh_token)
             token.blacklist()
-        except:
-            return Response({"error": "Not logged in"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            return Response({"error": "Invalid or expired refresh token"}, status=status.HTTP_400_BAD_REQUEST)
+
         return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
 
 class VerifyEmailAPIView(APIView):
@@ -194,6 +211,7 @@ class VerifyEmailAPIView(APIView):
 class FollowAPIView(generics.CreateAPIView):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, username, *args, **kwargs):
@@ -215,6 +233,7 @@ class FollowAPIView(generics.CreateAPIView):
         return Response( {"message": f"You are now following {followuser.username}"},status=status.HTTP_201_CREATED)
 
 class UnfollowAPIView(generics.DestroyAPIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
@@ -228,8 +247,8 @@ class UnfollowAPIView(generics.DestroyAPIView):
         except Follow.DoesNotExist:
             return Response({"error": "You are not following this user"}, status=status.HTTP_400_BAD_REQUEST)
     
-class FollowersListAPIView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
+class FollowersListAPIView(APIView):
+    permission_classes = [AllowAny]
 
     def get(self, request, username, *args, **kwargs):
         try:
@@ -242,8 +261,8 @@ class FollowersListAPIView(generics.ListAPIView):
 
         return Response({"followers": usernames}, status=status.HTTP_200_OK)
     
-class FollowingListAPIView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
+class FollowingListAPIView(APIView):
+    permission_classes = [AllowAny]
 
     def get(self, request, username, *args, **kwargs):
         try:
@@ -256,7 +275,8 @@ class FollowingListAPIView(generics.ListAPIView):
 
         return Response({"following": usernames}, status=status.HTTP_200_OK)
 
-class FollowRequestListAPIView(generics.ListAPIView):
+class FollowRequestListAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -265,6 +285,7 @@ class FollowRequestListAPIView(generics.ListAPIView):
         return Response({"requests": usernames}, status=status.HTTP_200_OK)
     
 class FollowRequestAcceptOrRejectAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, username, *args, **kwargs):

@@ -15,7 +15,7 @@ urlpatterns = [
     path('<str:username>/edit-profile/', CustomUserUpdateAPIView.as_view(), name="user-detail"),
     path('<str:username>/deleteaccount/', CustomUserDestroyAPIView.as_view(), name="user-delete"),
     path('login/', LoginView.as_view(), name="user-login"),
-    path('<str:username>/logout/', LogoutView.as_view()),
+    path('logout/', LogoutView.as_view()),
     path('verify-email/<uuid:token>/', VerifyEmailAPIView.as_view(), name="verify-email"),
     path('follow/<str:username>/', FollowAPIView.as_view()),
     path('unfollow/<str:username>/', UnfollowAPIView.as_view()),

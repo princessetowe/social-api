@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -6,31 +5,44 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Post, Comment, Like
 from .serializers import PostSerializer, CommentSerializer, LikeSerializer
 from utils.tags import handle_tags
-# from drf_yasg.utils import swagger_auto_schema
-# Create your views here.
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class PostListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
-    # @swagger_auto_schema(
-    #     responses={200: PostSerializer(many=True)},
-    #     operation_description="Retrieve a list of all posts",
-    # )
+    @swagger_auto_schema(
+        responses={200: PostSerializer(many=True)},
+        operation_description="Retrieve a list of all posts",
+    )
 
     def get(self, request):
         posts = Post.objects.all().order_by("-created_at")
         serializer = PostSerializer(posts, many=True, context={"request": request})
         return Response(serializer.data)
     
-    # @swagger_auto_schema(
-    #     request_body=PostSerializer,
-    #     responses={
-    #         201: "Post created successfully",
-    #         400: "Invalid data provided",
-    #     },
-    #     operation_description="Create a new post (supports multiple image/video uploads)",
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'caption': openapi.Schema(type=openapi.TYPE_STRING, description='Caption for the post'),
+                'files': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(type=openapi.TYPE_FILE),
+                    description='List of image/video files to upload'
+                ),
+            },
+            required=['files'],
+        ),
+        responses={
+            201 : "Post Created",
+            400 : "Bad Request",
+        },
+        operation_description="Create a new post",
 
-    # )
+    )
 
     def post(self, request):
         serializer = PostSerializer(data=request.data, context={"request": request})
@@ -43,10 +55,12 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
 class CommentListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     
     def get_queryset(self):
         post_id = self.kwargs["post_pk"]
@@ -59,6 +73,7 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
 class LikeAPIView(generics.GenericAPIView):
     serializer_class = LikeSerializer
     permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
     
     def post(self, request, post_id):
         like, created = Like.objects.get_or_create(user=request.user, post_id=post_id)

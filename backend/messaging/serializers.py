@@ -52,7 +52,7 @@ class ChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chat
-        fields = ["id", "members", "member_usernames", "messages", "created_at"]
+        fields = ["id", "members", "member_usernames", "messages", "created_at", "unread_count"]
 
     def get_unread_count(self, obj):
         user = self.context["request"].user
