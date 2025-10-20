@@ -18,8 +18,8 @@ from django.shortcuts import get_object_or_404
 from .throttles import LoginThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
-
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.exceptions import PermissionDenied
 
 
 User = settings.AUTH_USER_MODEL
@@ -255,9 +255,12 @@ class FollowersListAPIView(APIView):
             user = CustomUser.objects.get(username=username)
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        followers = Follow.objects.filter(following=user).select_related("follower")
-        usernames = [f.follower.username for f in followers]
+        
+        if user.is_private:
+            raise PermissionDenied("This is a private account")
+        else:
+            followers = Follow.objects.filter(following=user).select_related("follower")
+            usernames = [f.follower.username for f in followers]
 
         return Response({"followers": usernames}, status=status.HTTP_200_OK)
     
@@ -270,8 +273,12 @@ class FollowingListAPIView(APIView):
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        following = Follow.objects.filter(follower=user).select_related("following")
-        usernames = [f.following.username for f in following]
+        if user.is_private:
+            raise PermissionDenied("This is a private account")
+        
+        else:
+            following = Follow.objects.filter(follower=user).select_related("following")
+            usernames = [f.following.username for f in following]
 
         return Response({"following": usernames}, status=status.HTTP_200_OK)
 

@@ -8,18 +8,50 @@ from utils.tags import handle_tags
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 class PostListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'username',
+                openapi.IN_QUERY,
+                description="Filter posts by username",
+                type=openapi.TYPE_STRING,
+            ),
+        ],
         responses={200: PostSerializer(many=True)},
-        operation_description="Retrieve a list of all posts",
+        operation_description="Retrieve posts. You can filter by ?username=<username>.",
     )
 
     def get(self, request):
-        posts = Post.objects.all().order_by("-created_at")
+        user = request.user
+        posts = Post.objects.select_related("creator")
+
+        username = request.query_params.get("username")
+
+        if username:
+            posts = posts.filter(creator__username=username)
+            
+            try:
+                target_user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            if target_user.is_private and target_user != user:
+                return Response({"error": "This account is private"}, status=status.HTTP_403_FORBIDDEN)
+            
+            posts = posts.filter(creator=target_user)
+        else:
+            posts = posts.exclude(creator__is_private=True) | posts.filter(creator=user)
+
+        posts = posts.distinct().order_by("-created_at")
         serializer = PostSerializer(posts, many=True, context={"request": request})
         return Response(serializer.data)
     
@@ -57,33 +89,71 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
+    def get_object(self):
+        creator = self.kwargs["creator"]
+        post_id = self.kwargs.get("pk")
+        post = get_object_or_404(Post.objects.select_related("creator"), id=post_id, creator__username=creator)
+
+        if post.creator.is_private and self.request.user != post.creator:
+            raise PermissionDenied("This is a private account")
+        
+        if self.request.method in ["PUT", "PATCH", "DELETE"] and post.creator != self.request.user:
+            raise PermissionDenied("You can only make changes to your posts")
+        
+        return post
 class CommentListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     
     def get_queryset(self):
+        username = self.kwargs["username"]
         post_id = self.kwargs["post_pk"]
-        return Comment.objects.filter(post_id=post_id,).select_related("user").order_by("-created_at")
+        user = get_object_or_404(User, username=username)
+        post = get_object_or_404(Post, id=post_id)
+
+        if user.is_private and user != self.request.user:
+            raise PermissionDenied("This is a private account")
+        
+        return Comment.objects.filter(post=post).select_related("user").order_by("-created_at")
     
     def perform_create(self, serializer):
+        username = self.kwargs["username"]
         post_id = self.kwargs["post_pk"]
-        comment = serializer.save(user=self.request.user, post_id=post_id)
+        user = get_object_or_404(User, username=username)
+        post = get_object_or_404(Post, id=post_id)
+
+        if user.is_private and user != self.request.user:
+            raise PermissionDenied("This is a private account")
+        
+        serializer.save(user=self.request.user, post=post)
 
 class LikeAPIView(generics.GenericAPIView):
     serializer_class = LikeSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     
-    def post(self, request, post_id):
-        like, created = Like.objects.get_or_create(user=request.user, post_id=post_id)
+    def post(self, request, username, post_id):
+        user = get_object_or_404(User, username=username)
+        post = get_object_or_404(Post, id=post_id)
+
+        if user.is_private and user != request.user:
+            raise PermissionDenied("This is a private account")
+        
+        like, created = Like.objects.get_or_create(user=request.user, post=post)
         if not created:
             return Response({"message": "Liked by you already"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message": "Post Liked"}, status=status.HTTP_201_CREATED)
     
-    def delete(self, request, post_id):
+    def delete(self, request, username, post_id):
+        user = get_object_or_404(User, username=username)
+        post = get_object_or_404(Post, id=post_id)
+
+        if user.is_private and user != request.user:
+            raise PermissionDenied("This is a private account")
+        
         try:
-            like= Like.objects.get(user=request.user, post_id=post_id)
+            like= Like.objects.get(user=request.user, post=post)
             like.delete()
             return Response({"message": "Like removed"}, status=status.HTTP_204_NO_CONTENT)
         
