@@ -37,7 +37,7 @@ def create_comment_notification(sender, instance, created, **kwargs):
             )  
 
         #Tagged in a comment
-        tagged_usernames = re.findall(r'@(\w+)', instance.caption)
+        tagged_usernames = re.findall(r'@(\w+)', instance.content)
         for username in tagged_usernames:
             try:
                 tagged_user = CustomUser.objects.get(username=username)

@@ -59,6 +59,21 @@ class PostSerializer(serializers.ModelSerializer):
                 hashtag_obj.save()
         return post
     
+    def to_representation(self, instance):
+        creator = instance.creator
+        creator_data = {
+            "username": creator.username,
+            "profile_picture": creator.profile_picture.url if creator.profile_picture else None,
+        }
+
+        media_data = PostMediaSerializer(instance.media.all(), many=True, context=self.context).data
+        return {
+            "creator": creator_data,
+            "user_post_id": instance.user_post_id,
+            "caption": instance.caption,
+            "media": media_data,
+        }
+        
 class CommentSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     replies = serializers.SerializerMethodField()

@@ -108,9 +108,9 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
     
     def get_queryset(self):
         username = self.kwargs["username"]
-        post_id = self.kwargs["post_pk"]
+        post_id = self.kwargs["user_post_id"]
         user = get_object_or_404(User, username=username)
-        post = get_object_or_404(Post, id=post_id)
+        post = get_object_or_404(Post, user_post_id=post_id, creator__username=username)
 
         if user.is_private and user != self.request.user:
             raise PermissionDenied("This is a private account")
@@ -119,9 +119,9 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         username = self.kwargs["username"]
-        post_id = self.kwargs["post_pk"]
+        post_id = self.kwargs["user_post_id"]
         user = get_object_or_404(User, username=username)
-        post = get_object_or_404(Post, id=post_id)
+        post = get_object_or_404(Post, user_post_id=post_id, creator__username=username)
 
         if user.is_private and user != self.request.user:
             raise PermissionDenied("This is a private account")
@@ -133,9 +133,12 @@ class LikeAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
     
-    def post(self, request, username, post_id):
+    def post(self, request, username, user_post_id):
         user = get_object_or_404(User, username=username)
-        post = get_object_or_404(Post, id=post_id)
+        post = get_object_or_404(Post, user_post_id=user_post_id, creator__username=username)
+
+        if post.creator == request.user:
+            return Response({"error": "You cannot like your own post"}, status=status.HTTP_400_BAD_REQUEST)
 
         if user.is_private and user != request.user:
             raise PermissionDenied("This is a private account")
@@ -145,9 +148,9 @@ class LikeAPIView(generics.GenericAPIView):
             return Response({"message": "Liked by you already"}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message": "Post Liked"}, status=status.HTTP_201_CREATED)
     
-    def delete(self, request, username, post_id):
+    def delete(self, request, username, user_post_id):
         user = get_object_or_404(User, username=username)
-        post = get_object_or_404(Post, id=post_id)
+        post = get_object_or_404(Post, user_post_id=user_post_id, creator__username=username)
 
         if user.is_private and user != request.user:
             raise PermissionDenied("This is a private account")
