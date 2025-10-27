@@ -90,9 +90,9 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [JWTAuthentication]
 
     def get_object(self):
-        creator = self.kwargs["creator"]
-        post_id = self.kwargs.get("pk")
-        post = get_object_or_404(Post.objects.select_related("creator"), id=post_id, creator__username=creator)
+        creator = self.kwargs.get("creator")
+        user_post_id = self.kwargs.get("user_post_id")
+        post = get_object_or_404(Post.objects.select_related("creator"), user_post_id=user_post_id, creator__username=creator)
 
         if post.creator.is_private and self.request.user != post.creator:
             raise PermissionDenied("This is a private account")

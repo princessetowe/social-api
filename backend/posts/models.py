@@ -15,12 +15,20 @@ class Post(models.Model):
     caption = models.TextField(blank=True)
     hashtags = models.ManyToManyField(Hashtag, related_name="posts", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    user_post_id = models.PositiveIntegerField()
 
     class Meta:
         ordering = ["-created_at"]
+        unique_together = ("creator", "user_post_id")
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            last_post = Post.objects.filter(creator=self.creator).order_by("-user_post_id").first()
+            self.user_post_id = (last_post.user_post_id + 1) if last_post else 1
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Post for {self.creator}"
+        return f"Post for {self.creator.username} - {self.user_post_id}"
 
 class PostMedia(models.Model):
     MEDIA_TYPES = (

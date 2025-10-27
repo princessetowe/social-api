@@ -23,11 +23,20 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('id', 'creator', 'caption', 'media', 'files', 'created_at')
-        read_only_fields = ("id", "creator", "created_at")
+        read_only_fields = ("id", "creator", "created_at",  'user_post_id')
 
     def create(self, validated_data):
         files = validated_data.pop('files', [])
-        post = Post.objects.create(**validated_data)
+        request = self.context.get("request")
+        user = request.user
+
+        validated_data.pop('creator', None)
+        validated_data.pop('user_post_id', None)
+
+        last_post = Post.objects.filter(creator=user).order_by("-user_post_id").first()
+        next_id = (last_post.user_post_id + 1) if last_post else 1
+
+        post = Post.objects.create(creator=user, user_post_id=next_id, **validated_data)
 
         for file in files:
             #Checks file extension
