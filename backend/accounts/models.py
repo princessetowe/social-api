@@ -58,3 +58,12 @@ class FollowRequest(models.Model):
 
     def __str__(self):
         return f"{self.from_user} requested to follow {self.to_user}"
+
+class UserStats(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="stats")
+    posts_count = models.PositiveIntegerField(default=0)
+    followers_count = models.PositiveIntegerField(default=0)
+    following_count = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"Stats for {self.user.username}"

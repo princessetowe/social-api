@@ -1,11 +1,12 @@
 from rest_framework import generics, status
 from .models import (
     CustomUser, EmailVerificationToken, 
-    Follow, FollowRequest
+    Follow, FollowRequest, UserStats
 )
 from .serializers import (
     CustomUserSerializer, FollowSerializer,
-    LoginSerializer, RefreshSerializer
+    LoginSerializer, RefreshSerializer,
+    UserStatsSerializer
 )
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -314,3 +315,12 @@ class FollowRequestAcceptOrRejectAPIView(APIView):
             follow_request.delete()
             return Response({"message": "Follow request rejected"}, status=status.HTTP_200_OK)
         return Response({"error": "Invalid action"}, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserStatsAPIView(generics.RetrieveAPIView):
+    serializer_class = UserStatsSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get_object(self):
+        stats, _ = UserStats.objects.get_or_create(user=self.request.user)
+        return stats
