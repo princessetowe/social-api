@@ -373,3 +373,28 @@ class BlockedUsersListAPIView(APIView):
         blocks = Block.objects.filter(blocker=request.user).select_related("blocked")
         blocked_usernames = [b.blocked.username for b in blocks]
         return Response({"blocked_users": blocked_usernames}, status=status.HTTP_200_OK)
+  
+class ChangePasswordAPIView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def update(self, request, *args, **kwargs):
+        user = request.user
+        current_password = request.data.get("current_password")
+        new_password = request.data.get("new_password")
+
+        if not current_password or not new_password:
+            return Response({"error": "Current and new passwords are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.check_password(current_password):
+            return Response({"error": "Current password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if len(new_password) < 8:
+            return Response({"error": "New password must be at least 8 characters long"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if current_password == new_password:
+            return Response({"error": "New password must be different from the current password"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(new_password)
+        user.save()
+        return Response({"message": "Password changed successfully"}, status=status.HTTP_200_OK)
