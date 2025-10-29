@@ -11,6 +11,7 @@ from drf_yasg import openapi
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
+from accounts.models import Block
 
 User = get_user_model()
 class PostListCreateAPIView(APIView):
@@ -36,6 +37,10 @@ class PostListCreateAPIView(APIView):
 
         username = request.query_params.get("username")
 
+        blocked_by_users = Block.objects.filter(blocker=user).values_list('blocked_id', flat=True)
+        blocking_users = Block.objects.filter(blocked=user).values_list('blocker_id', flat=True)
+        posts = posts.exclude(creator__id__in=blocked_by_users).exclude(creator__id__in=blocking_users)
+
         if username:
             posts = posts.filter(creator__username=username)
             
@@ -43,6 +48,10 @@ class PostListCreateAPIView(APIView):
                 target_user = User.objects.get(username=username)
             except User.DoesNotExist:
                 return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            
+            if Block.objects.filter(blocker=user, blocked=target_user).exists() or \
+               Block.objects.filter(blocker=target_user, blocked=user).exists():
+                return Response({"error": "You cannot view this user's posts"}, status=status.HTTP_403_FORBIDDEN)
             
             if target_user.is_private and target_user != user:
                 return Response({"error": "This account is private"}, status=status.HTTP_403_FORBIDDEN)
@@ -97,6 +106,10 @@ class PostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
         if post.creator.is_private and self.request.user != post.creator:
             raise PermissionDenied("This is a private account")
         
+        if Block.objects.filter(blocker=self.request.user, blocked=post.creator).exists() or \
+           Block.objects.filter(blocker=post.creator, blocked=self.request.user).exists():
+            raise PermissionDenied("You cannot view this user's post")
+        
         if self.request.method in ["PUT", "PATCH", "DELETE"] and post.creator != self.request.user:
             raise PermissionDenied("You can only make changes to your posts")
         
@@ -115,6 +128,10 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
         if user.is_private and user != self.request.user:
             raise PermissionDenied("This is a private account")
         
+        if Block.objects.filter(blocker=self.request.user, blocked=user).exists() or \
+           Block.objects.filter(blocker=user, blocked=self.request.user).exists():
+            raise PermissionDenied("You cannot view or comment on this user's posts")
+        
         return Comment.objects.filter(post=post).select_related("user").order_by("-created_at")
     
     def perform_create(self, serializer):
@@ -125,6 +142,10 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
 
         if user.is_private and user != self.request.user:
             raise PermissionDenied("This is a private account")
+        
+        if Block.objects.filter(blocker=self.request.user, blocked=user).exists() or \
+           Block.objects.filter(blocker=user, blocked=self.request.user).exists():
+            raise PermissionDenied("You cannot comment on this user's posts")
         
         serializer.save(user=self.request.user, post=post)
 
@@ -143,6 +164,10 @@ class LikeAPIView(generics.GenericAPIView):
         if user.is_private and user != request.user:
             raise PermissionDenied("This is a private account")
         
+        if Block.objects.filter(blocker=request.user, blocked=user).exists() or \
+           Block.objects.filter(blocker=user, blocked=request.user).exists():
+            raise PermissionDenied("You cannot like this user's post")
+        
         like, created = Like.objects.get_or_create(user=request.user, post=post)
         if not created:
             return Response({"message": "Liked by you already"}, status=status.HTTP_400_BAD_REQUEST)
@@ -154,6 +179,10 @@ class LikeAPIView(generics.GenericAPIView):
 
         if user.is_private and user != request.user:
             raise PermissionDenied("This is a private account")
+        
+        if Block.objects.filter(blocker=request.user, blocked=user).exists() or \
+           Block.objects.filter(blocker=user, blocked=request.user).exists():
+            raise PermissionDenied("You cannot interact with this user's post")
         
         try:
             like= Like.objects.get(user=request.user, post=post)

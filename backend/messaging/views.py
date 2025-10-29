@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from accounts.models import Block
 
 class ChatListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = ChatSerializer
@@ -51,6 +52,12 @@ class MessageListCreateAPIView(generics.ListCreateAPIView):
 
         if not chat.members.filter(id=self.request.user.id).exists():
             return PermissionError("You are not a member of this chat")
+    
+        for member in chat.members.all():
+            if Block.objects.filter(blocker=self.request.user, blocked=member).exists() or \
+               Block.objects.filter(blocker=member, blocked=self.request.user).exists():
+                raise PermissionError("You cannot send messages to this user")
+
         serializer.save(sender=self.request.user, chat=chat)
 
     def handle_exception(self, exc):

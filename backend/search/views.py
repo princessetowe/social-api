@@ -18,7 +18,7 @@ class SearchAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
-                "q",
+                "search",
                 openapi.IN_QUERY,
                 description="Search query. Use '@' for username, '#' for hashtag, or plain text for name search.",
                 type=openapi.TYPE_STRING,
@@ -35,7 +35,7 @@ class SearchAPIView(APIView):
     )
 
     def get(self, request):
-        query = request.query_params.get("q", "").strip()
+        query = request.query_params.get("search", "").strip()
         if not query:
             return Response({"error": "Query parameter is required."}, status=status.HTTP_400_BAD_REQUEST)
 

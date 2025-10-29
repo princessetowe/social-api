@@ -222,6 +222,11 @@ class FollowAPIView(generics.CreateAPIView):
         if request.user == followuser:
             return Response({"error": "You cannot follow yourself"}, status=status.HTTP_400_BAD_REQUEST)
         
+        if Block.objects.filter(blocker=request.user, blocked=followuser).exists():
+            return Response({"error": "You have blocked this user"}, status=status.HTTP_403_FORBIDDEN)
+        if Block.objects.filter(blocker=followuser, blocked=request.user).exists():
+            return Response({"error": "You cannot follow this user because they have blocked you"}, status=status.HTTP_403_FORBIDDEN)
+        
         if followuser.is_private:
             follow_request, created = FollowRequest.objects.get_or_create(from_user=request.user, to_user=followuser)
 
