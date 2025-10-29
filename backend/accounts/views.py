@@ -1,12 +1,13 @@
 from rest_framework import generics, status
 from .models import (
     CustomUser, EmailVerificationToken, 
-    Follow, FollowRequest, UserStats
+    Follow, FollowRequest, UserStats,
+    Block,
 )
 from .serializers import (
     CustomUserSerializer, FollowSerializer,
     LoginSerializer, RefreshSerializer,
-    UserStatsSerializer
+    UserStatsSerializer, BlockSerializer
 )
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -324,3 +325,37 @@ class UserStatsAPIView(generics.RetrieveAPIView):
     def get_object(self):
         stats, _ = UserStats.objects.get_or_create(user=self.request.user)
         return stats
+    
+class BlockUserAPIView(APIView):
+    serializer_class = BlockSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request, username, *args, **kwargs):
+        blocked_user = get_object_or_404(CustomUser, username=username)
+
+        if request.user == blocked_user:
+            return Response({"error": "You cannot block yourself"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        block, created = Block.objects.get_or_create(blocker=request.user, blocked=blocked_user)
+        if not created:
+            return Response({"message": "User already blocked"}, status=status.HTTP_200_OK)
+        
+        Follow.objects.filter(follower=request.user, following=blocked_user).delete()
+        Follow.objects.filter(follower=blocked_user, following=request.user).delete()
+
+        return Response({"message": f"You have blocked {blocked_user.username}"}, status=status.HTTP_201_CREATED)
+    
+class UnblockUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request, username, *args, **kwargs):
+        blocked_user = get_object_or_404(CustomUser, username=username)
+
+        try:
+            block = Block.objects.get(blocker=request.user, blocked=blocked_user)
+            block.delete()
+            return Response({"message": f"You have unblocked {blocked_user.username}"}, status=status.HTTP_200_OK)
+        except Block.DoesNotExist:
+            return Response({"error": "This user is not blocked"}, status=status.HTTP_400_BAD_REQUEST)

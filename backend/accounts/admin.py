@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import CustomUser, Follow, FollowRequest
+from .models import (
+    CustomUser, Follow, FollowRequest,
+    Block, UserStats,
+)
 # Register your models here.
 
 @admin.register(CustomUser)
@@ -10,3 +13,5 @@ class CustomerUserAdmin(admin.ModelAdmin):
 
 admin.site.register(Follow)
 admin.site.register(FollowRequest)
+admin.site.register(Block)
+admin.site.register(UserStats)

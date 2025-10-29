@@ -67,3 +67,14 @@ class UserStats(models.Model):
 
     def __str__(self):
         return f"Stats for {self.user.username}"
+   
+class Block(models.Model):
+    blocker = models.ForeignKey(User, related_name="blocking", on_delete=models.CASCADE)
+    blocked = models.ForeignKey(User, related_name="blocked_by", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("blocker", "blocked")
+
+    def __str__(self):
+        return f"{self.blocker.username} blocked {self.blocked.username}"

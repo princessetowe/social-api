@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, Follow, UserStats
+from .models import CustomUser, Follow, UserStats, Block
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,3 +35,9 @@ class UserStatsSerializer(serializers.ModelSerializer):
         model = UserStats
         fields = ['user', 'posts_count', 'followers_count', 'following_count']
         read_only_fields = ['user']
+
+class BlockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Block
+        fields = ['id', 'blocker', 'blocked', 'created_at']
+        read_only_fields = ['id', 'created_at', 'blocker']
