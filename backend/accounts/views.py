@@ -364,3 +364,12 @@ class UnblockUserAPIView(APIView):
             return Response({"message": f"You have unblocked {blocked_user.username}"}, status=status.HTTP_200_OK)
         except Block.DoesNotExist:
             return Response({"error": "This user is not blocked"}, status=status.HTTP_400_BAD_REQUEST)
+        
+class BlockedUsersListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, *args, **kwargs):
+        blocks = Block.objects.filter(blocker=request.user).select_related("blocked")
+        blocked_usernames = [b.blocked.username for b in blocks]
+        return Response({"blocked_users": blocked_usernames}, status=status.HTTP_200_OK)

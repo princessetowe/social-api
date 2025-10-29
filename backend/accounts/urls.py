@@ -7,6 +7,7 @@ from .views import (
     FollowingListAPIView, FollowRequestListAPIView, 
     FollowRequestAcceptOrRejectAPIView, LogoutView,
     UserStatsAPIView, BlockUserAPIView, UnblockUserAPIView,
+    BlockedUsersListAPIView
 )
 
 urlpatterns = [
@@ -27,4 +28,5 @@ urlpatterns = [
     path('stats/', UserStatsAPIView.as_view(), name="user-stats"),
     path('block/<str:username>/', BlockUserAPIView.as_view()),
     path('unblock/<str:username>/', UnblockUserAPIView.as_view()),
+    path('blocked-users/', BlockedUsersListAPIView.as_view()),
 ]
