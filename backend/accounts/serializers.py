@@ -41,3 +41,20 @@ class BlockSerializer(serializers.ModelSerializer):
         model = Block
         fields = ['id', 'blocker', 'blocked', 'created_at']
         read_only_fields = ['id', 'created_at', 'blocker']
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(
+        write_only=True, 
+        required=True,
+        style={'input_type': 'password'}
+        )
+    new_password = serializers.CharField(
+        write_only=True, 
+        required=True,
+        style={'input_type': 'password'}
+        )
+    
+    def validate_new_password(self, value):
+        if attrs.get('current_password') == value:
+            raise serializers.ValidationError("New password must be different from the current password.")
+        return attrs

@@ -7,7 +7,8 @@ from .models import (
 from .serializers import (
     CustomUserSerializer, FollowSerializer,
     LoginSerializer, RefreshSerializer,
-    UserStatsSerializer, BlockSerializer
+    UserStatsSerializer, BlockSerializer,
+    ChangePasswordSerializer,
 )
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -22,8 +23,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import PermissionDenied
-
-
+from drf_yasg import openapi
 User = settings.AUTH_USER_MODEL
 
 # Create your views here.
@@ -377,6 +377,28 @@ class BlockedUsersListAPIView(APIView):
 class ChangePasswordAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+    serializer_class = ChangePasswordSerializer
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "current_password": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Current password", format="password"
+                ),
+                "new_password": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="New password", format="password"
+                ),
+            },
+            required=["current_password", "new_password"],
+        ),
+        responses={
+            200: openapi.Response(description="Password changed successfully"),
+            400: openapi.Response(description="Bad request / validation error"),
+            401: openapi.Response(description="Unauthorized"),
+        },
+        operation_description="Change the authenticated user's password. Provide current_password and new_password.",
+    )
 
     def update(self, request, *args, **kwargs):
         user = request.user
