@@ -20,13 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ep$188st95z+wc37z%)3+$4b^44eb1c97xaq)h0)+6msbqki$*'
+env = environ.Env()
+environ.Env.read_env()
+SECRET_KEY = env('SECRET_KEY', default='django-insecure-ep$188st95z+wc37z%)3+$4b^44eb1c97xaq)h0)+6msbqki$*')
+DEBUG = env.bool('DEBUG', default=False)
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=True)
-
-# Hosts allowed to connect. Set via env `ALLOWED_HOSTS` as a comma-separated list.
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['127.0.0.1', 'localhost'])
 
 
 # Application definition
@@ -189,9 +189,9 @@ env = environ.Env()
 environ.Env.read_env()
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
+# EMAIL_HOST = env('EMAIL_HOST')
+# EMAIL_PORT = env('EMAIL_PORT')
+# EMAIL_USE_TLS = env('EMAIL_USE_TLS')
 # EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 # EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 # DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
