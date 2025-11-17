@@ -221,3 +221,4 @@ __marimo__/
 **/migrations/
 **/profile_pics/
 !**/migrations/__init__.py
+**/staticfiles/
