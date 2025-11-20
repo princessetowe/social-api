@@ -2,8 +2,8 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .models import Post, Comment, Like
-from .serializers import PostSerializer, CommentSerializer, LikeSerializer
+from .models import Post, Comment, Like, CommentLike
+from .serializers import PostSerializer, CommentSerializer, LikeSerializer, CommentLikeSerializer
 from utils.tags import handle_tags
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from drf_yasg.utils import swagger_auto_schema
@@ -12,8 +12,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
 from accounts.models import Block
+from rest_framework.pagination import PageNumberPagination
 
 User = get_user_model()
+
 class PostListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
@@ -191,3 +193,31 @@ class LikeAPIView(generics.GenericAPIView):
         
         except Like.DoesNotExist:
             return Response({"message": "You have not liked this post"}, status=status.HTTP_400_BAD_REQUEST)
+        
+class CommentLikeCreate(generics.CreateAPIView):
+    serializer_class = CommentLikeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        comment_id = self.request.data.get('comment_id')
+        comment = Comment.objects.get(pk=comment_id)
+        
+        like, created = CommentLike.objects.get_or_create(
+            user=self.request.user,
+            comment=comment
+        )
+        
+        if not created:
+            like.delete()
+            return Response({'liked': False}, status=status.HTTP_204_NO_CONTENT)
+
+class CommentLikeDestroy(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        comment_id = kwargs.get('comment_id')
+        CommentLike.objects.filter(
+            user=request.user,
+            comment_id=comment_id
+        ).delete()
+        return Response({'liked': False}, status=status.HTTP_204_NO_CONTENT)

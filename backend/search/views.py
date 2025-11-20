@@ -9,7 +9,6 @@ from .serializers import UserSearchSerializer, PostSearchSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework_simplejwt.authentication import JWTAuthentication
-# Create your views here.
 
 class SearchAPIView(APIView):
     permission_classes = [IsAuthenticated]

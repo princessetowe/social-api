@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Comment, Like, PostMedia, Hashtag
+from .models import Post, Comment, Like, PostMedia, Hashtag, CommentLike
 from accounts.serializers import CustomUserSerializer
 from django.contrib.auth import get_user_model
 from utils.tags import handle_tags
@@ -97,3 +97,9 @@ class LikeSerializer(serializers.ModelSerializer):
         model = Like
         fields = ['id', 'user', 'post', 'created_at']
         read_only_fields = ['id', 'user', 'id']
+
+class CommentLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentLike
+        fields = ["id", "user", "comment", "created_at"]
+        read_only_fields = ["created_at"]

@@ -20,6 +20,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+
+import environ
 env = environ.Env()
 environ.Env.read_env()
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-ep$188st95z+wc37z%)3+$4b^44eb1c97xaq)h0)+6msbqki$*')
@@ -183,20 +185,19 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
-
 import environ
 env = environ.Env()
+# Read .env file if present (safe to call multiple times)
 environ.Env.read_env()
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# EMAIL_HOST = env('EMAIL_HOST')
-# EMAIL_PORT = env('EMAIL_PORT')
-# EMAIL_USE_TLS = env('EMAIL_USE_TLS')
-# EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-# EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
-# DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
-DEFAULT_FROM_EMAIL = "noreply@social.com"
-
+# Email configuration — use typed casts and safe defaults
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = env.int('EMAIL_PORT', default=587)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@social.com')
 
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.BackendAuth',

@@ -37,7 +37,7 @@ class PostMedia(models.Model):
     )
 
     post = models.ForeignKey(Post, related_name="media", on_delete=models.CASCADE)
-    file = models.FileField(upload_to="posts/media/")
+    file = models.FileField(upload_to="backend/posts-media/")
     media_type = models.CharField(max_length=5, choices=MEDIA_TYPES)
 
     def __str__(self):
@@ -60,3 +60,11 @@ class Like(models.Model):
 
     def __str__(self):
         return f"{self.user} liked {self.post.id}"
+    
+class CommentLike(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="likes")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} liked {self.comment.id}"

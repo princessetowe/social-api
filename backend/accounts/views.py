@@ -26,8 +26,6 @@ from rest_framework.exceptions import PermissionDenied
 from drf_yasg import openapi
 User = settings.AUTH_USER_MODEL
 
-# Create your views here.
-
 class CustomUserListView(generics.ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
