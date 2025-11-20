@@ -12,8 +12,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
 from accounts.models import Block
-from rest_framework.pagination import PageNumberPagination
-
 User = get_user_model()
 
 class PostListCreateAPIView(APIView):
