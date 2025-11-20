@@ -11,6 +11,18 @@ User = settings.AUTH_USER_MODEL
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='customuser_set',
+        blank=True,
+        help_text=('The groups this user belongs to.'),
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='customuser_user_permissions_set',
+        blank=True,
+        help_text=('Specific permissions for this user.'),
+    )
     date_joined = models.DateTimeField(auto_now_add=True)
     profile_picture = models.ImageField(upload_to='accounts/profile_pics', null=True, blank=True)
     bio = models.TextField(blank=True)
