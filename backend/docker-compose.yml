@@ -1,0 +1,12 @@
+name: docker-project
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: social-api-image
+        container_name: social-api-container
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./backend:/backend

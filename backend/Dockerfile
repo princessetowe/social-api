@@ -5,11 +5,9 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /backend
 
-COPY requirements.txt .
+COPY . /backend/
 
 RUN pip3 install -r requirements.txt
-
-COPY backend/ .
 
 EXPOSE 8000
 

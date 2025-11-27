@@ -11,7 +11,7 @@ gunicorn==23.0.0
 inflection==0.5.1
 packaging==25.0
 phonenumbers==9.0.15
-pillow==11.3.0
+pillow==11.3.0 
 psycopg2-binary==2.9.11
 PyJWT==2.10.1
 pytz==2025.2
@@ -20,3 +20,4 @@ sqlparse==0.5.3
 typing_extensions==4.15.0
 tzdata==2025.2
 uritemplate==4.2.0
+whitenoise==6.7.0
