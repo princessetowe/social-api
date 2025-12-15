@@ -1,4 +1,4 @@
-# Social Media API
+# Social API
 
 A scalable **Social Media REST API** built with **Django** and **Django REST Framework (DRF)**. The project is modularized into multiple apps such as **accounts**, **posts**, **messaging**, **notifications**, and **search**, and includes **Swagger/OpenAPI documentation** for easy API exploration.
 
