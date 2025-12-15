@@ -89,7 +89,6 @@ social-api/
 |   │   └── tags.py
 |   ├── manage.py
 |   ├── requirements.txt
-|   ├── README.md
 ```
 
 ---
