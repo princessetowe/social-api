@@ -25,70 +25,71 @@ A scalable **Social Media REST API** built with **Django** and **Django REST Fra
 All applications live inside a single Django project called **`backend`**.
 
 ```
-backend/
-├── accounts/
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── backends.py
-│   ├── exceptions.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── signals.py
-│   ├── tests.py
-│   ├── throttles.py
-│   ├── urls.py
-│   └── views.py
-├── backend/
-│   ├── __init__.py
-│   ├── asgi.py
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── messaging/
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── tests.py
-│   ├── urls.py
-│   └── views.py
-├── notifications/
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── signals.py
-│   ├── tests.py
-│   ├── urls.py
-│   └── views.py
-├── posts/
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── signals.py
-│   ├── tests.py
-│   ├── urls.py
-│   └── views.py
-├── search/
-│   ├── __init__.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── models.py
-│   ├── serializers.py
-│   ├── tests.py
-│   ├── urls.py
-│   └── views.py
-├── utils/
-│   ├── hashtag.py
-│   └── tags.py
-├── manage.py
-├── requirements.txt
-├── README.md
+social-api/
+├── backend/ # Django project root
+|   ├── accounts/
+|   │   ├── __init__.py
+|   │   ├── admin.py
+|   │   ├── apps.py
+|   │   ├── backends.py
+|   │   ├── exceptions.py
+|   │   ├── models.py
+|   │   ├── serializers.py
+|   │   ├── signals.py
+|   │   ├── tests.py
+|   │   ├── throttles.py
+|   │   ├── urls.py
+|   │   └── views.py
+|   ├── backend/
+|   │   ├── __init__.py
+|   │   ├── asgi.py
+|   │   ├── settings.py
+|   │   ├── urls.py
+|   │   └── wsgi.py
+|   ├── messaging/
+|   │   ├── __init__.py
+|   │   ├── admin.py
+|   │   ├── apps.py
+|   │   ├── models.py
+|   │   ├── serializers.py
+|   │   ├── tests.py
+|   │   ├── urls.py
+|   │   └── views.py
+|   ├── notifications/
+|   │   ├── __init__.py
+|   │   ├── admin.py
+|   │   ├── apps.py
+|   │   ├── models.py
+|   │   ├── serializers.py
+|   │   ├── signals.py
+|   │   ├── tests.py
+|   │   ├── urls.py
+|   │   └── views.py
+|   ├── posts/
+|   │   ├── __init__.py
+|   │   ├── admin.py
+|   │   ├── apps.py
+|   │   ├── models.py
+|   │   ├── serializers.py
+|   │   ├── signals.py
+|   │   ├── tests.py
+|   │   ├── urls.py
+|   │   └── views.py
+|   ├── search/
+|   │   ├── __init__.py
+|   │   ├── admin.py
+|   │   ├── apps.py
+|   │   ├── models.py
+|   │   ├── serializers.py
+|   │   ├── tests.py
+|   │   ├── urls.py
+|   │   └── views.py
+|   ├── utils/
+|   │   ├── hashtag.py
+|   │   └── tags.py
+|   ├── manage.py
+|   ├── requirements.txt
+|   ├── README.md
 ```
 
 ---
