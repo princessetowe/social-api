@@ -4,7 +4,7 @@ A scalable **Social Media REST API** built with **Django** and **Django REST Fra
 
 ---
 
-## 🚀 Features
+## Features
 
 * Custom user authentication (username, email, or phone number)
 * Email verification system
@@ -20,7 +20,7 @@ A scalable **Social Media REST API** built with **Django** and **Django REST Fra
 
 ---
 
-## 🧱 Project Structure
+## Project Structure
 
 All applications live inside a single Django project called **`backend`**.
 
@@ -93,11 +93,11 @@ backend/
 
 ---
 
-## 👤 Accounts App
+## Accounts App
 
 The **accounts** app handles authentication, user profiles, and social relationships.
 
-### 🔐 Authentication
+### Authentication
 
 * Custom authentication backend allows users to log in using:
 
@@ -107,7 +107,7 @@ The **accounts** app handles authentication, user profiles, and social relations
 
 Implemented in `backends.py` by extending Django’s `ModelBackend`.
 
-### 🧑 Custom User Model
+### Custom User Model
 
 * Extends `AbstractUser`
 * Unique email field
@@ -116,19 +116,19 @@ Implemented in `backends.py` by extending Django’s `ModelBackend`.
 * Country field
 * Privacy setting (`is_private`)
 
-### ✉️ Email Verification
+### Email Verification
 
 * Email verification tokens generated using UUID
 * Tokens expire after **8 hours**
 * Linked to users via a foreign key
 
-### 🤝 Follow System
+### Follow System
 
 * Users can follow other users
 * Private accounts require approval via **follow requests**
 * Unique constraints prevent duplicate relationships
 
-### 📊 User Statistics
+### User Statistics
 
 * One-to-one relationship with user
 * Tracks:
@@ -137,7 +137,7 @@ Implemented in `backends.py` by extending Django’s `ModelBackend`.
   * Followers count
   * Following count
 
-### 🚫 Blocking
+### Blocking
 
 * Users can block other users
 * Blocked users cannot interact
@@ -145,7 +145,7 @@ Implemented in `backends.py` by extending Django’s `ModelBackend`.
 
 ---
 
-## ⚠️ Exception Handling
+## Exception Handling
 
 A custom DRF exception handler is implemented to improve API error responses.
 
@@ -164,22 +164,22 @@ This ensures consistent and user-friendly API feedback.
 
 ---
 
-## 📨 Other Apps Overview
+## Other Apps Overview
 
-### 📝 Posts
+### Posts
 
 * Create, update, and delete posts
 * Supports **hashtags** in posts
 * Comments support **mentions (@username)** and **hashtags (#tag)**
 * Tracks post counts per user
 
-### 💬 Messaging
+### Messaging
 
 * One-to-one private messaging
 * Group chat support
 * Designed for real-time or asynchronous communication
 
-### 🔔 Notifications
+### Notifications
 
 Notifications are generated for key user activities, including:
 
@@ -192,7 +192,7 @@ Notifications are generated for key user activities, including:
 
 This ensures users stay informed about interactions relevant to them.
 
-### 🔍 Search
+### Search
 
 * Search by **hashtags**
 * Search users by **name**
@@ -200,21 +200,20 @@ This ensures users stay informed about interactions relevant to them.
 
 ---
 
-## 📄 API Documentation (Swagger)
+## API Documentation (Swagger)
 
 Swagger/OpenAPI is integrated for easy testing and exploration of endpoints.
 
 Once the server is running, access:
 
 ```
-/api/docs/
+/swagger/
 ```
 
-(or the configured Swagger URL)
 
 ---
 
-## 🛠️ Installation & Setup
+## Installation & Setup
 
 ### 1️⃣ Clone the repository
 
@@ -265,15 +264,15 @@ python manage.py runserver
 
 ---
 
-## 🔐 Authentication & Permissions
+## Authentication & Permissions
 
-* JWT (depending on configuration)
+* JWT Authentication(depending on configuration)
 * Protected endpoints require authentication
 * Permissions vary by app and endpoint
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 python manage.py test
@@ -281,7 +280,7 @@ python manage.py test
 
 ---
 
-## 📌 Tech Stack
+## Tech Stack
 
 * Python
 * Django
@@ -293,13 +292,13 @@ python manage.py test
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-## ✨ Author
+## Author
 
 Built with ❤️ for scalable social platforms.
 
