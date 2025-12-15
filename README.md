@@ -266,7 +266,7 @@ python manage.py runserver
 
 ## Authentication & Permissions
 
-* JWT Authentication(depending on configuration)
+* JWT Authentication is used for securing API endpoints
 * Protected endpoints require authentication
 * Permissions vary by app and endpoint
 
@@ -285,7 +285,7 @@ python manage.py test
 * Python
 * Django
 * Django REST Framework
-* SQLite (configurable)
+* PostgreSQL / MySQL (configurable)
 * Swagger / OpenAPI
 * django-phonenumber-field
 * django-countries
