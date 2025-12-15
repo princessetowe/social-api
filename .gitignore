@@ -222,3 +222,6 @@ __marimo__/
 **/profile_pics/
 !**/migrations/__init__.py
 **/staticfiles/
+
+docker-compose.yml
+Dockerfile
